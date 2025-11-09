@@ -1,9 +1,10 @@
-from flask import Flask, render_template_string
-import matplotlib.pyplot as plt
+from flask import Flask, render_template_string, render_template, request
+import plotly 
 import io
 import base64
+import matplotlib.pyplot as plt
 
-# make chart
+# plot
 fig, ax = plt.subplots()
 x = [1, 2, 3, 4, 5]
 y = [10, 20, 30, 40, 50]
@@ -19,27 +20,19 @@ plt.close(fig)
 bf.seek(0)
 img_base = base64.b64encode(bf.getvalue()).decode('utf-8')
 
-html = f"""
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Aura Prosumer Dashboard</title>
-</head>
-<body>
-    <h1>Testy</h1>
-<div>
-    <h2>Energy Flow Visualization</h2>
-    <img src="data:image/png;base64,{img_base}" alt="Energy Flow Graph">
-</div>
-</body>
-</html>
-"""
+html = """
 
-app = Flask(__name__)
+"""
+app = Flask(__name__, template_folder="C:/Users/tranm/Hack-The-Change-2025")
 
 @app.route("/")
-def hello_world():
-    return render_template_string(html, name="Flask User")
+def idx():
+    return render_template("ui.html", name="Flask User")
+
+# @app.route("/plot", methods=["POST"])
+# def plot():
+#     if 'csv' not in request.files:
+#         return render_template_string()
 
 if __name__ == '__main__':
     app.run(debug=True)
