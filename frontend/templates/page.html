@@ -30,7 +30,7 @@
 
                 <!-- Card 2: Estimate for cost -->
                 <div id="estimated-cost" class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-teal-500 transition-all hover:shadow-xl">
-                    <div class="text-sm font-semibold text-indigo-600 mb-2">Estimated Cost</div>
+                    <div class="text-sm font-semibold text-indigo-600 mb-2">Estimated Rate</div>
                     <div class="text-4xl font-bold text-gray-900">$<span id="live-cost-est">loading....</span></div>
                 </div>
 
@@ -40,8 +40,42 @@
                     <div class="text-4xl font-bold text-gray-900"><span id="moe">loading....</span></div>
                 </div>
 
+                <div id="charts" class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-indigo-500 mt-10">
+                    <canvas id="line-chart"></canvas>
+                </div>
+
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
+            let chart1;
+            let chart1Data = [];
+            let chart1Labels = [];
+
+            window.onload = function() {
+                const c = document.getElementById('line-chart').getContext('2d');
+                const config = {
+                    type: "line",
+                    data: {
+                        labels: chart1Labels,
+                        datasets: [{
+                            label: 'Cost',
+                            data: chart1Data,
+                            borderColor: 'rgba(0,0,1,1)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        animation: false,
+                        scales: {
+                            x: { title: {display: true, text: 'Time'}},
+                            y: {beginAtZero: true, title: {display: true, text: 'cost ($) per kWh'}, suggestedMin: 0, suggestedMax: 1.6}
+                        }
+                    }
+                }
+
+                // Estimated cost for each hour
+                chart1 = new Chart(c, config)    
+            };
+            
             function fetchLiveValue() {
                 fetch('/api/values')
                 .then(response => {
@@ -49,35 +83,38 @@
                 })
 
                 .then(data=>{
+                    // update card values
                     const gen_update = data.powergen;
                     const generator_block = document.getElementById("energy_gen");
                     generator_block.innerText = gen_update + "kWh"
                     generator_block.style.color = 'black';
                     
-                    const updated_value = data.value;
+                    const updated_value = data.cost;
                     const cost_estimates = document.getElementById("live-cost-est");
-                    cost_estimates.innerText = updated_value;
+                    cost_estimates.innerText = updated_value + "/kWh";
                     cost_estimates.style.color = 'black';
                     cost_estimates.style.textAlign = "center";
 
                     const moe_update = data.moe;
                     const moe_block = document.getElementById("moe");
-                    moe_block.innerText = moe_update + "%"
+                    moe_block.innerText = moe_update + "%";
                     moe_block.style.color = 'black';
+
+                    // update chart
+                    chart1Labels.push(data.timestamp)
+                    chart1Data.push(data.cost)
+
+                    if (chart1Data.length > 10) {
+                        chart1Labels.shift()
+                        chart1Data.shift();
+                    }
+                    chart1.update();
                 })
             }
 
             setInterval(fetchLiveValue, 3000);
             fetchLiveValue();
-
-            window.onload = function() {
-                    fetchLiveValue();
-                    // Start on the main dashboard page
-                    const d = document.getElementById('powerChart').getContext('2d')
-                    const chart = new Chart(d, )
-                    
-                };
-            </script>
-            </div>
+        </script>
         </div>
+    </div>
 </body>
