@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<header>
+</header>
+
+<div class="Savings_block"><h2>Estimated Cost <br>$ <span id="live-cost-est">loading....</span></h2></div>
+<div class="Savings_block"><h2>Estimated Cost <br>$ <span id="energy_gen">loading....</span></h2></div>
+<div class="Savings_block"><h2>Estimated Cost <br>$ <span id="live-cost-est">loading....</span></h2></div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    function fetchLiveValue() {
+        fetch('/api/values')
+        .then(response => {
+            return response.json();
+        })
+
+        .then(data=>{
+            const updated_value = data.value;
+
+            const cost_estimates = document.getElementById("live-cost-est");
+
+            cost_estimates.innerText = updated_value;
+            cost_estimates.style.color = 'black';
+            cost_estimates.style.float = "center";
+
+            const gen_update = data.powergen;
+
+            const generator_block = document.getElementById("energy_gen");
+            generator_block.innerText = gen_update
+            generator_block.style.color = 'black';
+            
+
+
+        })
+    }
+    setInterval(fetchLiveValue, 3000);
+    fetchLiveValue();
+
+     window.onload = function() {
+            fetchLiveValue();
+            // Start on the main dashboard page
+    };
+
+</script>
