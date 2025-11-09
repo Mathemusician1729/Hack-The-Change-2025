@@ -13,16 +13,16 @@ def index():
     return render_template('page.html')
 
 
-
-
-
 @app.route('/api/values')
 def get_values():
     global live_int_value
     global data_values
     global power_generated
     global moe
+    global current_time
 
+    
+    current_time = datetime.datetime.now()
 
     power_generated = 28
 
