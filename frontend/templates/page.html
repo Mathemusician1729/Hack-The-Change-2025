@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<head>
+    <title>EnergyHub - Set Your Energy Goals!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        h1 {color: #0004ff; 
+                font-size: 65px;
+            }
+        h2 {color: #0004ff; }
+        h3 {color: #0004ff; }
+        body {font-family: 'Inter', sans-serif; text-align: center; padding: 20px; background-color: #cad5e0; }
+        p {color: #0004ff; }
+    </style>
+</head>
+
+<body>
+    <div id="app" class="max-w-7xl mx-auto">
+        <header>
+            <h1 class="text-6xl md:text-6xl font-bold text-blue-600"><b>EnergyHub</b></h1>
+        </header>
+
+        <div id="page-dashboard" class="page-content">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+
+                <!-- Card 2: Estimate for cost -->
+                <div id="estimated-cost" class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-indigo-500 transition-all hover:shadow-xl">
+                    <div class="text-sm font-semibold text-indigo-600 mb-2">Estimated Rate</div>
+                    <div class="text-4xl font-bold text-gray-900">$<span id="live-cost-est">loading....</span></div>
+                </div>
+
+                <!-- Card 1: Estimate for how much power used -->
+                <div id="consumption-card" class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-teal-500 transition-all hover:shadow-xl">
+                    <div class="text-sm font-semibold text-indigo-600 mb-2">Estimated Power Consumption</div>
+                    <div class="text-4xl font-bold text-gray-900"><span id="energy_gen">loading....</span></div>
+                </div>
+
+                <!-- Card 3: Margin of Error -->
+                <div id="margin-of-error" class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-green-500 transition-all hover:shadow-xl">
+                    <div class="text-sm font-semibold text-indigo-600 mb-2">Margin of Error</div>
+                    <div class="text-4xl font-bold text-gray-900"><span id="moe">loading....</span></div>
+                </div>
+                <!-- Card 3: Margin of Error -->
+                <div id="AISummary"></div>
+
+                <div id="chart1" class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-indigo-500 mt-10">
+                    <canvas id="est-cost-graph"></canvas>
+                </div>
+                <div id="chart2" class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-teal-500 mt-10">
+                    <canvas id="est-energy-consumption-graph"></canvas>
+                </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            let chart1;
+            let chart2;
+
+            let chart1Data = [];
+            let chart2Data = [];
+
+            let chart1Labels = [];
+            let chart2Labels = [];
+
+            window.onload = function() {
+                const c1 = document.getElementById('est-cost-graph').getContext('2d');
+                const config1 = {
+                    type: "line",
+                    data: {
+                        labels: chart1Labels,
+                        datasets: [{
+                            label: 'Cost',
+                            data: chart1Data,
+                            borderColor: 'rgba(0,0,1,1)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        animation: false,
+                        scales: {
+                            x: { title: {display: true, text: 'Time'}},
+                            y: {beginAtZero: true, title: {display: true, text: 'Cost ($) per kWh'}, suggestedMin: 0, suggestedMax: 1.6}
+                        }
+                    }
+                }
+
+                const c2 = document.getElementById('est-energy-consumption-graph').getContext('2d')
+                const config2 = {
+                    type: "bar",
+                    data: {
+                        labels: chart2Labels,
+                        datasets: [{
+                            label: 'Power',
+                            data: chart2Data,
+                            borderColor: 'rgba(0,0,1,1)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        animation: false,
+                        scales: {
+                            x: { title: {display: true, text: 'Time'}},
+                            y: {beginAtZero: true, title: {display: true, text: 'Estimated Energy Consumption'}, suggestedMin: 0, suggestedMax: 1.6}
+                        }
+                    }
+                }
+
+                chart1 = new Chart(c1, config1) // Estimated cost for each hour
+                chart2 = new Chart(c2, config2) // Estimated Power Consumption Increase
+            };
+            
+            function fetchLiveValue() {
+                fetch('/api/values')
+                .then(response => {
+                    return response.json();
+                })
+
+                .then(data=>{
+                    // update card values
+                    const gen_update = data.powergen;
+                    const generator_block = document.getElementById("energy_gen");
+                    generator_block.innerText = gen_update + "kWh"
+                    generator_block.style.color = 'black';
+                    
+                    const updated_value = data.cost;
+                    const cost_estimates = document.getElementById("live-cost-est");
+                    cost_estimates.innerText = updated_value + "/kWh";
+                    cost_estimates.style.color = 'black';
+                    cost_estimates.style.textAlign = "center";
+
+                    const moe_update = data.moe;
+                    const moe_block = document.getElementById("moe");
+                    moe_block.innerText = moe_update + "%";
+                    moe_block.style.color = 'black';
+
+                    const ai_summary = data.AISummary;
+                    const AISummary = document.getElementById("AISummary");
+                    AISummary.innerHTML = ai_summary;
+                    // update chart
+                    chart1Labels.push(data.timestamp)
+                    chart1Data.push(data.cost)
+
+                    chart2Labels.push(data.timestamp)
+                    chart2Data.push(data.powergen)
+
+                    if (chart1Data.length > 10) {
+                        chart1Labels.shift();
+                        chart2Labels.shift();
+            
+                        chart1Data.shift();
+                        chart2Data.shift();
+                    }
+                    chart1.update();
+                    chart2.update();
+                })
+            }
+
+            setInterval(fetchLiveValue, 3000);
+            fetchLiveValue();
+        </script>
+        </div>
+    </div>
+</body>
