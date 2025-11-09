@@ -1,5 +1,5 @@
 import torch
-from model import eletric_neuralnet
+from frontend.model import eletric_neuralnet
 
 model = eletric_neuralnet()
 model.to("cuda")

@@ -6,8 +6,38 @@ import requests
 from openai import OpenAI
 app = Flask(__name__)
 import datetime 
+import pandas as pd
+import torch
+from model import eletric_neuralnet
+#api_key = os.environ.get("OPENAI_API_KEY")
+model = eletric_neuralnet()
+model.to("cuda")
 
-api_key = os.environ.get("OPENAI_API_KEY")
+model.eval()
+df = pd.read_csv("smart_grid_dataset.csv")
+csv_last_d1 = df["Power Consumption (kW)"].iloc[-1]
+csv_last_d2 = df["Power Factor"].iloc[-1]
+csv_last_d3 = df["Humidity (%)"].iloc[-1]
+
+model.state_dict(torch.load(r"model_checkpoint_epoch_30_0.003284123493358493.pt")["model_state_dict"])
+
+inPT = torch.tensor(csv_last_d1, dtype=torch.float32)
+inPT = inPT.unsqueeze(0).to("cuda")
+live_int_value_out = model(inPT)
+    
+model.state_dict(torch.load(r"grid_to_humidity_10_0.0028516692109405994.pt")["model_state_dict"])
+
+inPT = torch.tensor(csv_last_d3, dtype=torch.float32)
+inPT = inPT.unsqueeze(0).to("cuda")
+moe_out = model(inPT)
+
+
+model.state_dict(torch.load(r"Grid_to_cost_10_0.0027483240701258183.pt")["model_state_dict"])
+
+    
+data_values_out =  model(moe_out)
+
+
 
 @app.route('/')
 def index():
@@ -23,22 +53,43 @@ def get_values():
     global current_time
 
     
+    model = eletric_neuralnet()
+    model.to("cuda")
+
+    model.eval()
+    df = pd.read_csv("smart_grid_dataset.csv")
+    csv_last_d1 = df["Power Consumption (kW)"].iloc[-1]
+    csv_last_d2 = df["Power Factor"].iloc[-1]
+    csv_last_d3 = df["Humidity (%)"].iloc[-1]
+
+
+
+
+
+
+
+    
     current_time = datetime.datetime.now()
 
-    power_generated = 28
+    power_generated = 56
 
-    data_values = 34
 
-    live_int_value = 6
+    
+    data_values =  data_values_out
 
-    moe = 52.4
+    if live_int_value_out != None:
+        live_int_value = 5
+    else:
+        live_int_value = live_int_value_out
+    
+    moe = 5.36
 
     output = 4.2
 
 
     client = OpenAI(
         base_url="https://openrouter.ai/api/v1",
-        api_key="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"
+        api_key="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"
     )
 
     completion = client.chat.completions.create(
@@ -49,7 +100,7 @@ def get_values():
         }]
     )
    
-    return jsonify({'value': live_int_value,
+    return jsonify({'cost': live_int_value,
                     "powergen": power_generated,
                     "moe": moe,
                     "AISummary": completion.choices[0].message.content})
