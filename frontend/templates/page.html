@@ -39,7 +39,8 @@
                     <div class="text-sm font-semibold text-indigo-600 mb-2">Margin of Error</div>
                     <div class="text-4xl font-bold text-gray-900"><span id="moe">loading....</span></div>
                 </div>
-
+                <!-- Card 3: Margin of Error -->
+                <div id="AISummary"></div>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
             function fetchLiveValue() {
@@ -64,6 +65,10 @@
                     const moe_block = document.getElementById("moe");
                     moe_block.innerText = moe_update + "%"
                     moe_block.style.color = 'black';
+
+                    const ai_summary = data.AISummary;
+                    const AISummary = document.getElementById("AISummary");
+                    AISummary.innerHTML = ai_summary;
                 })
             }
 
