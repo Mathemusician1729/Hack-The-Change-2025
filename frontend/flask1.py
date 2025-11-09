@@ -5,6 +5,7 @@ import json
 import requests
 from openai import OpenAI
 app = Flask(__name__)
+import datetime 
 
 api_key = os.environ.get("OPENAI_API_KEY")
 
@@ -52,8 +53,6 @@ def get_values():
                     "powergen": power_generated,
                     "moe": moe,
                     "AISummary": completion.choices[0].message.content})
-
-
 
 
 

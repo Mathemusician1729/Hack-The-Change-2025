@@ -48,23 +48,17 @@
                 <div id="chart2" class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-teal-500 mt-10">
                     <canvas id="est-energy-consumption-graph"></canvas>
                 </div>
-                <div>
-                    <canvas id="chart3"></canvas>
-                </div>
 
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
             let chart1;
             let chart2;
-            let chart3;
 
             let chart1Data = [];
             let chart2Data = [];
-            let chart3Data = [];
-      
+
             let chart1Labels = [];
             let chart2Labels = [];
-            let chart3Labels = [];
 
             window.onload = function() {
                 const c1 = document.getElementById('est-cost-graph').getContext('2d');
