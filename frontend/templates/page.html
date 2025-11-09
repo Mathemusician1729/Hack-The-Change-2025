@@ -22,16 +22,16 @@
         <div id="page-dashboard" class="page-content">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
 
-                <!-- Card 1: Estimate for how much power used -->
-                <div id="consumption-card" class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-indigo-500 transition-all hover:shadow-xl">
-                    <div class="text-sm font-semibold text-indigo-600 mb-2">Estimated Power Consumption</div>
-                    <div class="text-4xl font-bold text-gray-900"><span id="energy_gen">loading....</span></div>
-                </div>
-
                 <!-- Card 2: Estimate for cost -->
-                <div id="estimated-cost" class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-teal-500 transition-all hover:shadow-xl">
+                <div id="estimated-cost" class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-indigo-500 transition-all hover:shadow-xl">
                     <div class="text-sm font-semibold text-indigo-600 mb-2">Estimated Rate</div>
                     <div class="text-4xl font-bold text-gray-900">$<span id="live-cost-est">loading....</span></div>
+                </div>
+
+                <!-- Card 1: Estimate for how much power used -->
+                <div id="consumption-card" class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-teal-500 transition-all hover:shadow-xl">
+                    <div class="text-sm font-semibold text-indigo-600 mb-2">Estimated Power Consumption</div>
+                    <div class="text-4xl font-bold text-gray-900"><span id="energy_gen">loading....</span></div>
                 </div>
 
                 <!-- Card 3: Margin of Error -->
@@ -42,18 +42,32 @@
                 <!-- Card 3: Margin of Error -->
                 <div id="AISummary"></div>
 
-                <div id="charts" class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-indigo-500 mt-10">
-                    <canvas id="line-chart"></canvas>
+                <div id="chart1" class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-indigo-500 mt-10">
+                    <canvas id="est-cost-graph"></canvas>
+                </div>
+                <div id="chart2" class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-teal-500 mt-10">
+                    <canvas id="est-energy-consumption-graph"></canvas>
+                </div>
+                <div>
+                    <canvas id="chart3"></canvas>
                 </div>
 
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
             let chart1;
+            let chart2;
+            let chart3;
+
             let chart1Data = [];
+            let chart2Data = [];
+            let chart3Data = [];
+      
             let chart1Labels = [];
+            let chart2Labels = [];
+            let chart3Labels = [];
 
             window.onload = function() {
-                const c = document.getElementById('line-chart').getContext('2d');
+                const c1 = document.getElementById('est-cost-graph').getContext('2d');
                 const config1 = {
                     type: "line",
                     data: {
@@ -74,13 +88,14 @@
                     }
                 }
 
+                const c2 = document.getElementById('est-energy-consumption-graph').getContext('2d')
                 const config2 = {
-                    type: "line",
+                    type: "bar",
                     data: {
-                        labels: chart1Labels,
+                        labels: chart2Labels,
                         datasets: [{
-                            label: 'Cost',
-                            data: chart1Data,
+                            label: 'Power',
+                            data: chart2Data,
                             borderColor: 'rgba(0,0,1,1)'
                         }]
                     },
@@ -89,13 +104,13 @@
                         animation: false,
                         scales: {
                             x: { title: {display: true, text: 'Time'}},
-                            y: {beginAtZero: true, title: {display: true, text: 'Cost ($) per kWh'}, suggestedMin: 0, suggestedMax: 1.6}
+                            y: {beginAtZero: true, title: {display: true, text: 'Estimated Energy Consumption'}, suggestedMin: 0, suggestedMax: 1.6}
                         }
                     }
                 }
 
-                chart1 = new Chart(c, config1) // Estimated cost for each hour
-                chart2 = new Chart(c, config2) // Estimated Power Consumption Increase
+                chart1 = new Chart(c1, config1) // Estimated cost for each hour
+                chart2 = new Chart(c2, config2) // Estimated Power Consumption Increase
             };
             
             function fetchLiveValue() {
@@ -129,11 +144,18 @@
                     chart1Labels.push(data.timestamp)
                     chart1Data.push(data.cost)
 
+                    chart2Labels.push(data.timestamp)
+                    chart2Data.push(data.powergen)
+
                     if (chart1Data.length > 10) {
-                        chart1Labels.shift()
+                        chart1Labels.shift();
+                        chart2Labels.shift();
+            
                         chart1Data.shift();
+                        chart2Data.shift();
                     }
                     chart1.update();
+                    chart2.update();
                 })
             }
 
