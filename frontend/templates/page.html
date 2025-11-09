@@ -1,45 +1,83 @@
 <!DOCTYPE html>
-<header>
-</header>
+<head>
+    <title>EnergyHub - Set Your Energy Goals!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        h1 {color: #0004ff; 
+                font-size: 65px;
+            }
+        h2 {color: #0004ff; }
+        h3 {color: #0004ff; }
+        body {font-family: 'Inter', sans-serif; text-align: center; padding: 20px; background-color: #cad5e0; }
+        p {color: #0004ff; }
+    </style>
+</head>
 
-<div class="Savings_block"><h2>Estimated Cost <br>$ <span id="live-cost-est">loading....</span></h2></div>
-<div class="Savings_block"><h2>Estimated Cost <br>$ <span id="energy_gen">loading....</span></h2></div>
-<div class="Savings_block"><h2>Estimated Cost <br>$ <span id="live-cost-est">loading....</span></h2></div>
+<body>
+    <div id="app" class="max-w-7xl mx-auto">
+        <header>
+            <h1 class="text-6xl md:text-6xl font-bold text-blue-600"><b>EnergyHub</b></h1>
+        </header>
 
+        <div id="page-dashboard" class="page-content">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    function fetchLiveValue() {
-        fetch('/api/values')
-        .then(response => {
-            return response.json();
-        })
+                <!-- Card 1: Estimate for how much power used -->
+                <div id="consumption-card" class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-indigo-500 transition-all hover:shadow-xl">
+                    <div class="text-sm font-semibold text-indigo-600 mb-2">Estimated Power Consumption</div>
+                    <div class="text-4xl font-bold text-gray-900"><span id="energy_gen">loading....</span></div>
+                </div>
 
-        .then(data=>{
-            const updated_value = data.value;
+                <!-- Card 2: Estimate for cost -->
+                <div id="estimated-cost" class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-teal-500 transition-all hover:shadow-xl">
+                    <div class="text-sm font-semibold text-indigo-600 mb-2">Estimated Cost</div>
+                    <div class="text-4xl font-bold text-gray-900">$<span id="live-cost-est">loading....</span></div>
+                </div>
 
-            const cost_estimates = document.getElementById("live-cost-est");
+                <!-- Card 3: Margin of Error -->
+                <div id="margin-of-error" class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-green-500 transition-all hover:shadow-xl">
+                    <div class="text-sm font-semibold text-indigo-600 mb-2">Margin of Error</div>
+                    <div class="text-4xl font-bold text-gray-900"><span id="moe">loading....</span></div>
+                </div>
 
-            cost_estimates.innerText = updated_value;
-            cost_estimates.style.color = 'black';
-            cost_estimates.style.float = "center";
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            function fetchLiveValue() {
+                fetch('/api/values')
+                .then(response => {
+                    return response.json();
+                })
 
-            const gen_update = data.powergen;
+                .then(data=>{
+                    const gen_update = data.powergen;
+                    const generator_block = document.getElementById("energy_gen");
+                    generator_block.innerText = gen_update + "kWh"
+                    generator_block.style.color = 'black';
+                    
+                    const updated_value = data.value;
+                    const cost_estimates = document.getElementById("live-cost-est");
+                    cost_estimates.innerText = updated_value;
+                    cost_estimates.style.color = 'black';
+                    cost_estimates.style.textAlign = "center";
 
-            const generator_block = document.getElementById("energy_gen");
-            generator_block.innerText = gen_update
-            generator_block.style.color = 'black';
-            
+                    const moe_update = data.moe;
+                    const moe_block = document.getElementById("moe");
+                    moe_block.innerText = moe_update + "%"
+                    moe_block.style.color = 'black';
+                })
+            }
 
-
-        })
-    }
-    setInterval(fetchLiveValue, 3000);
-    fetchLiveValue();
-
-     window.onload = function() {
+            setInterval(fetchLiveValue, 3000);
             fetchLiveValue();
-            // Start on the main dashboard page
-    };
 
-</script>
+            window.onload = function() {
+                    fetchLiveValue();
+                    // Start on the main dashboard page
+                    const d = document.getElementById('powerChart').getContext('2d')
+                    const chart = new Chart(d, )
+                    
+                };
+            </script>
+            </div>
+        </div>
+</body>

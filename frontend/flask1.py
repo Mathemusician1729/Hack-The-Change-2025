@@ -1,5 +1,7 @@
 from flask import Flask, jsonify, render_template
 import random
+import matplotlib.pyplot as plt
+
 app = Flask(__name__)
 
 @app.route('/')
@@ -9,9 +11,10 @@ def index():
 
 @app.route('/api/values')
 def get_values():
-    global live_int_values
+    global live_int_value
     global data_values
     global power_generated
+    global moe
 
 
     power_generated = 28
@@ -20,10 +23,13 @@ def get_values():
 
     live_int_value = 6
 
+    moe = 52.4
+
     output = 4.2
 
     return jsonify({'value': live_int_value,
-                    "powergen": power_generated})
+                    "powergen": power_generated,
+                    "moe": moe})
 
 if __name__ == '__main__':
     app.run(debug=True, threaded=True)
