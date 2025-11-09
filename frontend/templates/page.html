@@ -52,7 +52,7 @@
 
             window.onload = function() {
                 const c = document.getElementById('line-chart').getContext('2d');
-                const config = {
+                const config1 = {
                     type: "line",
                     data: {
                         labels: chart1Labels,
@@ -67,13 +67,33 @@
                         animation: false,
                         scales: {
                             x: { title: {display: true, text: 'Time'}},
-                            y: {beginAtZero: true, title: {display: true, text: 'cost ($) per kWh'}, suggestedMin: 0, suggestedMax: 1.6}
+                            y: {beginAtZero: true, title: {display: true, text: 'Cost ($) per kWh'}, suggestedMin: 0, suggestedMax: 1.6}
                         }
                     }
                 }
 
-                // Estimated cost for each hour
-                chart1 = new Chart(c, config)    
+                const config2 = {
+                    type: "line",
+                    data: {
+                        labels: chart1Labels,
+                        datasets: [{
+                            label: 'Cost',
+                            data: chart1Data,
+                            borderColor: 'rgba(0,0,1,1)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        animation: false,
+                        scales: {
+                            x: { title: {display: true, text: 'Time'}},
+                            y: {beginAtZero: true, title: {display: true, text: 'Cost ($) per kWh'}, suggestedMin: 0, suggestedMax: 1.6}
+                        }
+                    }
+                }
+
+                chart1 = new Chart(c, config1) // Estimated cost for each hour
+                chart2 = new Chart(c, config2) // Estimated Power Consumption Increase
             };
             
             function fetchLiveValue() {
